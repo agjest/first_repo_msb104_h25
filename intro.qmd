@@ -1,0 +1,133 @@
+---
+title: "Ingtro Econometrics"
+format: html
+---
+
+```{r}
+#| label: setup
+#| message: false
+library(tidyverse)
+library(wooldridge)
+library(flextable)
+library(modelsummary)
+```
+
+```{r}
+# A few constants
+# Add data from SSB 10209: Persons killed or 
+# injured in road traffic accidents, by contents 
+# and month and DNV 2016 Figur and 3.2 Unike 
+# cruiseskip i norske farvann per måned.
+
+boats <- data.frame(
+  "month" = c(1:12), 
+  # accidents
+  "acc" = c(
+    312,    314,    272,    304,    415,    447,    
+    418,    442,    432,    395,    291,    332
+    ), 
+  "boats" = c(
+    1,  6,  9,  11, 52, 78, 72, 68, 45, 
+    11, 8,  5
+    ), 
+  "weather" = c(
+    4.3,    4.5,    6.5,    10.4,   14.7, 17.3 , 
+    19.1 , 18.6 , 15.4 , 11.4 , 7.3 ,   4.8 
+    ), 
+  "daylight" = c(
+    6.5,    9.3,    12, 14.5, 17.3, 19 ,17.5 , 
+    15.3 , 12.3 , 10 , 7.3 , 5.5
+    )
+  ) 
+
+# Norm data so that all is between 0 and 1
+boats <- boats %>% 
+  mutate(
+      boats_n = (boats - 0) / (80 - 0),
+      acc_n = (acc - 250) / (450 - 250)
+  )
+  
+boats |> 
+  flextable() |> 
+  autofit()
+```
+
+```{r}
+#Estimates 
+lm.1 = lm(
+  formula = 'acc ~ boats' , 
+  data = boats
+  ) 
+```
+
+```{r}
+lm.1 |> 
+  summary()
+```
+
+```{r}
+lm.1 |> 
+  as_flextable(show_coltype = FALSE)
+```
+
+
+```{r}
+lm.2 = lm(
+  formula = 'boats  ~  weather', 
+  data = boats
+  ) 
+```
+
+```{r}
+lm.2 |> 
+  summary()
+```
+
+```{r}
+lm.3 = lm(
+  formula = 'acc  ~  weather', 
+  data = boats
+  ) 
+```
+
+```{r}
+lm.3 |> 
+  summary()
+```
+
+
+
+```{r}
+lm.4 = lm(
+  formula = 'acc ~ boats + weather', 
+  data = boats
+  ) 
+```
+
+```{r}
+lm.4 |> 
+  summary()
+```
+
+```{r}
+modelsummary(
+  models = list(
+    `Mod 1\nY: accidents` = lm.1,
+    `Mod 2\nY: boats` = lm.2,
+    `Mod 3\nY: weather` = lm.3,
+    `Mod 4\nY: boats + weather` = lm.4
+  ),
+  estimate = "estimate",
+  # statistic gives t-values
+  statistic = "statistic",
+  output = "flextable",
+  fmt = 3,
+  stars = TRUE,
+  title = "Model 1-4. T-values in parentheses below estimate."
+  )   |> 
+  autofit() |> 
+  theme_booktabs() |> 
+  fontsize(size = 11) |> 
+  line_spacing(space = 0.2)
+```
+

@@ -4,17 +4,92 @@ format: html
 ---
 
 ```{r}
+#| message: false
 #| label: setup
 library(tidyverse)
 library(wooldridge)
 library(flextable)
+options(
+  paged.print = FALSE
+)
 ```
 
 
 ## Campus
 
 ```{r}
-
+campus <- wooldridge::campus
 ```
 
+```{r}
+campus <- campus %>% 
+  mutate(
+    crime = round((crime/enroll)*1000, 2),
+    police = round((police/enroll)*1000, 2))
+```
+
+
+
+```{r}
+# Scatter plot
+campus %>% 
+  ggplot(
+    mapping = aes(
+      x = police, 
+      y = crime
+    )
+    ) +
+  geom_point() +
+  xlab("Police per 1000 students") + 
+  ylab("Crimes per 1000 students") +
+  theme(
+    axis.text = element_text(size = 11),
+    axis.title = element_text(size = 12)
+    )
+```
+```{r}
+cor(campus)[1,2] %>% 
+  as.double() %>% 
+  round(.,2)
+```
+
+```{r}
+campus |> 
+  select(crime, police) |> 
+  cor() |> 
+  round(
+    digits = 2
+  ) |> 
+  _[1, 2]
+```
+
+Alternativt
+
+```{r}
+campus |> 
+  select(crime, police) |> 
+  cor() |> 
+  round(
+    digits = 2
+  ) %>%
+  .[1, 2]
+```
+
+```{r}
+campus |> 
+  filter(police < 10) |> 
+  ggplot(
+    mapping = aes(
+      x = police,
+      y = crime
+    )
+  ) + 
+  geom_point()  +
+  xlab("Police per 1000 students") + 
+  ylab("Crimes per 1000 students") +
+  theme(
+    axis.text = element_text(size = 16),
+    axis.title=element_text(size = 18)
+    )
+```
 

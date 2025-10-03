@@ -112,10 +112,10 @@ lm.4 |>
 ```{r}
 modelsummary(
   models = list(
-    `Mod 1\nY: accidents` = lm.1,
-    `Mod 2\nY: boats` = lm.2,
-    `Mod 3\nY: weather` = lm.3,
-    `Mod 4\nY: boats + weather` = lm.4
+    `Mod 1\n acc ~ boats` = lm.1,
+    `Mod 2\n boats  ~  weather` = lm.2,
+    `Mod 3\n acc ~ weather` = lm.3,
+    `Mod 4\n acc ~ boats + weather` = lm.4
   ),
   estimate = "estimate",
   # statistic gives t-values

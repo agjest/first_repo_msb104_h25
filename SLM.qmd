@@ -1,0 +1,20 @@
+---
+title: "Simple Linear Regression"
+format: html
+---
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(wooldridge)
+library(flextable)
+```
+
+
+## Campus
+
+```{r}
+
+```
+
+

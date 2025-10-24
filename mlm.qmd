@@ -1,19 +1,28 @@
 ---
 title: "MLR"
 format: html
+engine: knitr
+knitr:
+  opts_chunk: 
+    R.options:
+      width: 80
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r}
 #| label: setup
 #| message: false
 library(tidyverse)
+library(flextable)
 options(paged.print = FALSE)
+knitr::opts_chunk$set(width = 80)
 ```
-
 
 ## Data
 
 ```{r}
+#| echo: false
 # Data for constructed example
 set.seed(1234)
 df <- data.frame(W = rep(c(FALSE, TRUE), each = 100))  |> 
@@ -36,7 +45,6 @@ df2 <- df |>
 ```{r}
 df2
 ```
-
 
 ```{r}
 df2 |> 
@@ -93,6 +101,10 @@ df2 |>
   )
 ```
 
+```{r}
+cli::console_width()
+```
+
 Bare for å vise hva man kan gjøre hvis man trenger å lage et slik diagram (oppdatert kode også i slides)
 
 ```{r}
@@ -118,7 +130,6 @@ XYW <- ggplot(
 
 XYW
 ```
-
 
 ```{r}
 mtcars |> 
@@ -154,7 +165,6 @@ mtcars |>
   ylim(0, 35)
 ```
 
-
 ```{r}
 mtcars |> 
   select(mpg, wt, cyl) |> 
@@ -178,3 +188,139 @@ mtcars |>
   )
 ```
 
+## Interaksjon
+
+```{r}
+mtcars |> 
+  mutate(
+    cyl = fct(as.character(cyl), levels = c("4", "6", "8"))
+  ) %>%
+  lm(formula = 'mpg ~ cyl * wt', data = .) |> 
+  as_flextable()
+```
+
+```{r}
+mtcars_inter <- mtcars |> 
+  select(mpg, wt, cyl) |> 
+  mutate(
+    dum_6cyl = ifelse(cyl == 6, 1, 0),
+    dum_8cyl = ifelse(cyl == 8, 1, 0),
+    wt_6cyl = wt * dum_6cyl,
+    wt_8cyl = wt * dum_8cyl
+  )
+```
+
+```{r}
+lm_inter <- lm(
+  formula = 'mpg ~ wt + dum_6cyl + dum_8cyl + wt_6cyl + wt_8cyl',
+  data = mtcars_inter
+  ) |> 
+  as_flextable()
+```
+
+```{r}
+  lm(
+    formula = 'mpg ~ wt + cyl', 
+    data = mutate(
+      .data = mtcars, 
+      cyl = fct(as.character(cyl))
+      )
+    )  |> 
+  car::residualPlots(
+    plot = FALSE, 
+    tests = TRUE
+  ) |> 
+  as_tibble(rownames = "Term") |> 
+  flextable() |> 
+  autofit()
+```
+
+```{r}
+ lm(
+    formula = 'mpg ~ wt + cyl', 
+    data = mutate(
+      .data = mtcars, 
+      cyl = fct(as.character(cyl))
+      )
+    )  |> 
+  car::residualPlots(
+    plot = TRUE, 
+    tests = FALSE
+  ) 
+```
+
+```{r}
+ lm(
+    formula = 'mpg ~ wt * cyl', 
+    data = mutate(
+      .data = mtcars, 
+      cyl = fct(as.character(cyl))
+      )
+    )  |> 
+  car::residualPlots(
+    plot = TRUE, 
+    tests = FALSE
+  ) 
+```
+
+```{r}
+# check help for details, available 
+# types are overall ("o"), 
+# individual ("i") and both ("b")
+lm(
+  formula = 'mpg ~ wt + cyl + hp', 
+  data = mtcars
+  ) |> 
+  mctest::mctest(type = "b")
+```
+
+100 frihetsgrader 10% signifikansnivå
+
+```{r}
+qt(0.95, 100) |>  round(4)
+```
+
+```{r}
+qt(0.95, 8) |>  round(4)
+```
+
+```{r}
+qt(0.95, 1000000) |>  round(4)
+```
+
+```{r}
+campus <- wooldridge::campus |> 
+  as_tibble()
+```
+
+```{r}
+campus <- campus |> 
+  mutate(
+    rel_police = round(police/enroll *1000, 3),
+    rel_crime = round(crime/enroll *1000, 3)
+         )
+```
+
+```{r}
+campus |> 
+  lm(
+    formula = 'rel_crime ~ rel_police',
+    data = _
+  ) |> 
+  as_flextable()
+```
+
+```{r}
+campus |> 
+  filter(police < 10) |> 
+  lm(
+    formula = 'rel_crime ~ rel_police',
+    data = _
+  ) |> 
+  as_flextable()
+```
+
+```{r}
+#| paged.print: true
+mtcars
+```
